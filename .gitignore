@@ -10,4 +10,6 @@ output/
 .coverage
 htmlcov/
 docslice.yml
+codex_sug.md
+claude_sug.md
 
