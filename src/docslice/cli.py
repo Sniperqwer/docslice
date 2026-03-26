@@ -17,9 +17,21 @@ def gen(
     preset: str | None = typer.Option(None, "--preset"),
 ) -> None:
     """Generate a docslice blueprint from a documentation landing page."""
-    _ = (url, toc_selector, content_selector, preset)
-    typer.echo("gen is not implemented yet")
-    raise typer.Exit(code=1)
+    from pathlib import Path
+
+    from docslice.generator import generate
+    from docslice.utils import create_http_client
+
+    with create_http_client() as client:
+        summary = generate(
+            url,
+            toc_selector=toc_selector,
+            content_selector=content_selector,
+            preset_name=preset,
+            client=client,
+            output_path=Path("docslice.yml"),
+        )
+    summary.print()
 
 
 @app.command()
