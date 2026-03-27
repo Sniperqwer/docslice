@@ -189,3 +189,29 @@ def test_uses_first_matching_container() -> None:
     """)
     result = parse_toc(soup, ".sidebar", BASE)
     assert result.nodes[0].title == "First Nav"
+
+
+# ---------------------------------------------------------------------------
+# Multiple sibling <ul> elements (e.g. Mintlify sidebar)
+# ---------------------------------------------------------------------------
+
+def test_parse_multiple_sibling_uls() -> None:
+    soup = _soup("""
+    <div id="navigation-items">
+      <ul>
+        <li><a href="/docs/overview">Overview</a></li>
+        <li><a href="/docs/quickstart">Quickstart</a></li>
+      </ul>
+      <ul>
+        <li><a href="/docs/concepts">Concepts</a></li>
+      </ul>
+      <ul>
+        <li><a href="/docs/api">API Reference</a></li>
+        <li><a href="/docs/faq">FAQ</a></li>
+      </ul>
+    </div>
+    """)
+    result = parse_toc(soup, "#navigation-items", BASE)
+    assert len(result.nodes) == 5
+    titles = [n.title for n in result.nodes]
+    assert titles == ["Overview", "Quickstart", "Concepts", "API Reference", "FAQ"]

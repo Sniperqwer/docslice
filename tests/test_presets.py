@@ -63,6 +63,23 @@ def test_detect_vitepress_via_meta() -> None:
     assert preset.name == "vitepress"
 
 
+def test_detect_mintlify_via_meta() -> None:
+    soup = _soup('<meta name="generator" content="Mintlify"/>')
+    preset = detect_preset(soup)
+    assert preset is not None
+    assert preset.name == "mintlify"
+
+
+def test_detect_mintlify_via_dom() -> None:
+    soup = _soup(
+        '<div id="sidebar-content"></div>'
+        '<div class="mdx-content"></div>'
+    )
+    preset = detect_preset(soup)
+    assert preset is not None
+    assert preset.name == "mintlify"
+
+
 def test_detect_returns_none_for_unknown_site() -> None:
     soup = _soup("<html><body><p>Just a page</p></body></html>")
     assert detect_preset(soup) is None

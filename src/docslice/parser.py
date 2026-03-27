@@ -28,14 +28,21 @@ def parse_toc(
     if container is None:
         return TocParseResult(nodes=[])
 
-    # Use the container itself if it IS a list; otherwise find the first list inside.
+    # Collect the top-level list(s) to parse.
     if container.name in ("ul", "ol"):
-        root_list: Tag = container
+        top_lists: list[Tag] = [container]
     else:
-        found = container.find(["ul", "ol"])
-        if found is None:
-            return TocParseResult(nodes=[])
-        root_list = found
+        # Prefer direct-child <ul>/<ol> elements (handles Mintlify's 4 sibling <ul>s).
+        top_lists = [
+            c for c in container.children
+            if isinstance(c, Tag) and c.name in ("ul", "ol")
+        ]
+        if not top_lists:
+            # Fallback: search deeper (e.g. Sphinx wraps lists in extra divs).
+            found = container.find(["ul", "ol"])
+            if found is None:
+                return TocParseResult(nodes=[])
+            top_lists = [found]
 
     filtered_external = 0
 
@@ -64,8 +71,10 @@ def parse_toc(
                     nodes.append(TocNode(title=title, url=None, children=children))
         return nodes
 
-    nodes = _parse_list(root_list)
-    return TocParseResult(nodes=nodes, filtered_external=filtered_external)
+    all_nodes: list[TocNode] = []
+    for top_list in top_lists:
+        all_nodes.extend(_parse_list(top_list))
+    return TocParseResult(nodes=all_nodes, filtered_external=filtered_external)
 
 
 def _find_shallow_anchor(li: Tag) -> Tag | None:
