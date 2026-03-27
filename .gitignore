@@ -13,4 +13,5 @@ docslice.yml
 codex_sug.md
 claude_sug.md
 .claude/settings.local.json
+*.egg-info/
 

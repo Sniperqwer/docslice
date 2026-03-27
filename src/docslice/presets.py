@@ -57,6 +57,15 @@ def _detect_sphinx(soup: BeautifulSoup) -> bool:
     return False
 
 
+def _detect_mintlify(soup: BeautifulSoup) -> bool:
+    meta = soup.find("meta", attrs={"name": "generator"})
+    if meta and "mintlify" in (meta.get("content") or "").lower():
+        return True
+    if soup.select_one("#sidebar-content") and soup.select_one(".mdx-content"):
+        return True
+    return False
+
+
 def _detect_vitepress(soup: BeautifulSoup) -> bool:
     meta = soup.find("meta", attrs={"name": "generator"})
     if meta and "vitepress" in (meta.get("content") or "").lower():
@@ -112,6 +121,13 @@ PRESETS: list[Preset] = [
             ".sphinxsidebar",
             ".footer",
         ],
+    ),
+    Preset(
+        name="mintlify",
+        detect=_detect_mintlify,
+        toc_selector="#navigation-items",
+        content_selector="#content",
+        noise_selectors=["#table-of-contents"],
     ),
     Preset(
         name="vitepress",
