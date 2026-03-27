@@ -40,9 +40,34 @@ def fetch(
     delay: float | None = typer.Option(None, "--delay"),
 ) -> None:
     """Fetch blueprint pages and write Markdown outputs."""
-    _ = (output, delay)
-    typer.echo("fetch is not implemented yet")
-    raise typer.Exit(code=1)
+    from pathlib import Path
+
+    from docslice.fetcher import BlueprintError, fetch_all, load_blueprint, validate_blueprint
+    from docslice.utils import create_http_client
+
+    bp_path = Path("docslice.yml")
+
+    try:
+        blueprint = load_blueprint(bp_path)
+    except BlueprintError as exc:
+        typer.echo(f"Error: {exc}", err=True)
+        raise typer.Exit(code=2)
+
+    try:
+        validate_blueprint(blueprint)
+    except BlueprintError as exc:
+        typer.echo(f"Error: {exc}", err=True)
+        raise typer.Exit(code=2)
+
+    output_dir = Path(output)
+
+    with create_http_client() as client:
+        summary = fetch_all(blueprint, output_dir, delay_override=delay, client=client)
+
+    summary.print()
+
+    if summary.failed:
+        raise typer.Exit(code=1)
 
 
 def main() -> None:
